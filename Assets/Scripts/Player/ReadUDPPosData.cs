@@ -16,6 +16,8 @@ public class ReadUDPPosData : MonoBehaviour
 
     [SerializeField]
     private int udpPort = 7872;
+    [SerializeField]
+    private int udpPortFallback = 7873;
 
     private UdpClient udpClient;
     private Thread udpReadThread;
@@ -37,7 +39,28 @@ public class ReadUDPPosData : MonoBehaviour
 
     private void ReceiveData()
     {
-        udpClient = new UdpClient(udpPort);
+        bool useFallback = false;
+
+        try
+        {
+            udpClient = new UdpClient(udpPort);
+        }
+        catch
+        {
+            useFallback = true;
+        }
+
+        if (useFallback)
+        {
+            try
+            {
+                udpClient = new UdpClient(udpPortFallback);
+            }
+            catch (Exception er)
+            {
+                Console.WriteLine("Error loading UDP! Error message: " + er.Message);
+            }
+        }
 
         while (true)
         {

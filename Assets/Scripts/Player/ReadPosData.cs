@@ -213,7 +213,7 @@ public class ReadPosData : MonoBehaviour
             {
                 using (StreamWriter sw = new StreamWriter(versionFile))
                 {
-                    sw.WriteLine("0.2");
+                    sw.WriteLine("0.4");
                 }
             }
             catch
