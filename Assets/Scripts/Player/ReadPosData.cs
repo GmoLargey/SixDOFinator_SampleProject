@@ -126,9 +126,18 @@ public class ReadPosData : MonoBehaviour
     [SerializeField]
     public float RControllerVibration = 0f;
 
+    [SerializeField]
+    private DirectFrames m_DirectFrames;
+
     // Start is called before the first frame update
     void Start()
     {
+        if (m_DirectFrames == null)
+        {
+            m_DirectFrames = GetComponent<DirectFrames>();
+            if (m_DirectFrames == null) m_DirectFrames = gameObject.AddComponent<DirectFrames>();
+        }
+
         if (HMDAdjusts.Count <= 0)
         {
             //Default HMD adjustments
@@ -213,7 +222,7 @@ public class ReadPosData : MonoBehaviour
             {
                 using (StreamWriter sw = new StreamWriter(versionFile))
                 {
-                    sw.WriteLine("0.4");
+                    sw.WriteLine("0.5");
                 }
             }
             catch
@@ -390,6 +399,11 @@ public class ReadPosData : MonoBehaviour
                         m_RightEyeCam.aspect = aspectRatio;
                     }
                 }
+
+                if (m_DirectFrames != null)
+                {
+                    m_DirectFrames.PrepareCameras(m_FlatCam, m_LeftEyeCam, m_RightEyeCam, m_CameraModeToggle.StereoRenderMode(), currFOVH, currFOVV);
+                }
             }
 
             if (openXRFrameMatFlat != null)
@@ -495,6 +509,11 @@ public class ReadPosData : MonoBehaviour
 
     public void PostRenderRelease()
     {
+        if (m_DirectFrames != null)
+        {
+            m_DirectFrames.SubmitFrame();
+        }
+
         lockFrameData = false;
     }
 
@@ -541,6 +560,15 @@ public class ReadPosData : MonoBehaviour
             m_PlayerHead.transform.localPosition = new Vector3(currHMDX, currHMDY, -currHMDZ);
             Quaternion hmdRot = new Quaternion(currHMDQX, currHMDQY, currHMDQZ, currHMDQW);
             m_PlayerHead.transform.localEulerAngles = new Vector3(360f - hmdRot.eulerAngles.x, 360f - hmdRot.eulerAngles.y, hmdRot.eulerAngles.z);
+        }
+
+        if (m_DirectFrames != null)
+        {
+            // The packet values as received: the helper converts them itself
+            m_DirectFrames.SetFramePose(IsSBS(), IsAER(), aerLeftEye,
+                currHMDQX, currHMDQY, currHMDQZ, currHMDQW,
+                currHMDX, currHMDY, currHMDZ,
+                currIPD, currFOVH, currFOVV);
         }
 
         if (openXRFrameMatFlat != null)

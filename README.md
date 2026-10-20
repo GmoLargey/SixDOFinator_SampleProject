@@ -69,6 +69,18 @@ Newer versions of WinlatorXR also provide the HMD sending the data, eg: PICO or 
 
 The documentation of the XrApi can be found [here](https://github.com/Team-Beef-Studios/WinlatorXR?tab=readme-ov-file#winlatorxr-api)
 
+# Direct frames
+
+The project asks for XrApi 0.5. In WinlatorXR builds that carry `wxr_mod.dll` (the WinlatorXR Proton 11 arm64ec build), it hands each eye image to the headset as a direct frame, along with the head pose that eye was rendered from. The eye cameras then render into textures at headset resolution, not into the game window. That is sharper, and the picture stays in place in the headset even when a frame is late.
+
+This is handled by `Assets/Scripts/Player/DirectFrames.cs`, which `ReadPosData` adds to the player by itself, and by the `SixDofDirect` native plugin in `Assets/Plugins`. The plugin's source and build script are in `NativePlugin/SixDofDirect`. Rebuild it with [llvm-mingw](https://github.com/mstorsjo/llvm-mingw):
+
+    LLVM_MINGW=/path/to/llvm-mingw ./NativePlugin/SixDofDirect/build.sh
+
+It needs the Direct3D 11 graphics API, which is Unity's default for Windows. It works in all three camera modes (stereo, AER and 2D). Outside WinlatorXR, in Wine builds without the helper, or with the shortcut's direct frames tick box off, the game falls back to the frame sync pixel in the window as before. While WinlatorXR is not yet showing direct frames, the window shows a copy of the eye images.
+
+Settings on the `DirectFrames` component: `Enable Direct Frames`, `Eye Height` (pixels per eye, 1280 by default; the width follows from the headset's field of view) and `Mirror To Window`.
+
 # Asset credits:
 
 > TMP (Text Mesh Pro) built-in to Unity
